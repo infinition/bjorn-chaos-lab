@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bjorn Chaos Lab -- CTF Target Deployer</title>
+  <meta name="description" content="Bjorn Chaos Lab -- Deploy and manage vulnerable target containers for penetration testing and CTF training.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/chaoslab.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <img class="logo-img" src="/assets/chaoslab.png" alt="Bjorn Chaos Lab">
+      <h1 class="topbar-title">Bjorn Chaos Lab</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Disconnected</span>
+      </div>
+      <button class="btn btn-sm btn-ghost btn-disconnect" id="btnDisconnect" type="button" style="display:none">x</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- CONNECT -->
+    <section class="panel panel-connect" id="connectPanel">
+      <h2 class="panel-title"><span class="icon">::</span> Docker Host Connection</h2>
+      <div class="connect-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="inputHost">Docker Host (IP)</label>
+            <input type="text" id="inputHost" placeholder="192.168.1.75">
+          </div>
+          <div class="form-group">
+            <label for="inputUser">SSH Username</label>
+            <input type="text" id="inputUser" placeholder="user">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="inputPassword">SSH Password</label>
+            <input type="password" id="inputPassword" placeholder="********">
+          </div>
+          <div class="form-group">
+            <label for="inputNetwork">macvlan Network</label>
+            <input type="text" id="inputNetwork" placeholder="macvlan_zombieland" value="macvlan_zombieland">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-glow" id="btnConnect" type="button">
+          Connect
+        </button>
+      </div>
+    </section>
+
+    <!-- DEPLOY -->
+    <section class="panel panel-deploy" id="deployPanel" data-tab="deploy" style="display:none">
+      <h2 class="panel-title"><span class="icon">::</span> Deployment</h2>
+      <div class="deploy-controls">
+        <div class="form-group">
+          <label for="selectMode">Mode</label>
+          <select id="selectMode" class="select">
+            <option value="random">Random (mixed scenarios)</option>
+            <option value="web">Web (SQLi, LFI, CMDi, SSRF, traversal...)</option>
+            <option value="database">Database (MySQL)</option>
+            <option value="network">Network (SMB, FTP)</option>
+            <option value="full">Full (all scenarios)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="selectDifficulty">Difficulty</label>
+          <select id="selectDifficulty" class="select">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inputCount">Targets</label>
+          <div class="counter">
+            <button class="btn btn-sm" id="btnMinus" type="button">-</button>
+            <input type="number" id="inputCount" value="1" min="1" max="10">
+            <button class="btn btn-sm" id="btnPlus" type="button">+</button>
+          </div>
+        </div>
+        <div class="deploy-actions">
+          <button class="btn btn-primary btn-glow" id="btnDeploy" type="button">Deploy</button>
+          <button class="btn btn-danger" id="btnCleanAll" type="button">Delete All</button>
+          <button class="btn btn-secondary" id="btnReport" type="button">Report</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TARGETS -->
+    <section class="panel panel-targets" id="targetsPanel" data-tab="targets" style="display:none">
+      <div class="panel-header-row">
+        <h2 class="panel-title">
+          <span class="icon">::</span> Active Targets
+          <span class="target-count" id="targetCount">0</span>
+        </h2>
+        <div class="export-actions">
+          <button class="btn btn-sm btn-secondary" id="btnDownloadUsers" type="button">dl users.txt</button>
+          <button class="btn btn-sm btn-ghost" id="btnCopyUsers" type="button">cp users</button>
+          <button class="btn btn-sm btn-secondary" id="btnDownloadPasswords" type="button">dl passwords.txt</button>
+          <button class="btn btn-sm btn-ghost" id="btnCopyPasswords" type="button">cp passwords</button>
+        </div>
+      </div>
+      <div class="targets-container" id="targetsContainer">
+        <div class="empty-state" id="emptyState">
+          <p>No targets deployed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLAG VALIDATION -->
+    <section class="panel panel-validate" id="validatePanel" data-tab="validate" style="display:none">
+      <h2 class="panel-title"><span class="icon">::</span> Flag Validation</h2>
+      <div class="validate-form">
+        <div class="form-group">
+          <label for="inputFlag">Submit Flag</label>
+          <input type="text" id="inputFlag" placeholder="BJORN_CTF_XXXXXXXXXXXXXXXXXXXX">
+        </div>
+        <button class="btn btn-primary" id="btnValidate" type="button">Validate</button>
+      </div>
+      <div class="validate-result" id="validateResult"></div>
+    </section>
+
+    <!-- CREDENTIAL UPLOAD -->
+    <section class="panel panel-creds" id="credsPanel" data-tab="creds" style="display:none">
+      <h2 class="panel-title"><span class="icon">::</span> Upload Credentials to Bjorn</h2>
+      <div class="creds-form">
+        <div class="form-group">
+          <label for="credsHost">SSH Host</label>
+          <input type="text" id="credsHost" placeholder="192.168.1.66">
+        </div>
+        <div class="form-group">
+          <label for="credsUser">SSH User</label>
+          <input type="text" id="credsUser" placeholder="bjorn" value="bjorn">
+        </div>
+        <div class="form-group">
+          <label for="credsPass">SSH Password</label>
+          <input type="password" id="credsPass" placeholder="bjorn" value="bjorn">
+        </div>
+        <div class="form-group">
+          <label for="credsPath">Remote Path</label>
+          <input type="text" id="credsPath" placeholder="/home/bjorn/Bjorn/data/input/dictionary/" value="/home/bjorn/Bjorn/data/input/dictionary/">
+        </div>
+        <div class="creds-actions">
+          <button class="btn btn-primary" id="btnUploadCreds" type="button">Upload Credentials</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONSOLE (always visible when connected, not part of tab system) -->
+    <section class="panel panel-console" id="consolePanel" style="display:none">
+      <h2 class="panel-title">
+        <span class="icon">::</span> Live Console
+        <button class="btn btn-sm btn-ghost" id="btnClearConsole" type="button">clear</button>
+      </h2>
+      <div class="console-output" id="consoleOutput"></div>
+    </section>
+  </main>
+
+  <!-- MOBILE TAB BAR -->
+  <nav class="mobile-tabs" id="mobileTabBar">
+    <button class="mobile-tab active" data-tab="deploy" type="button">
+      <span class="tab-icon">></span><span class="tab-label">Deploy</span>
+    </button>
+    <button class="mobile-tab" data-tab="targets" type="button">
+      <span class="tab-icon">#</span><span class="tab-label">Targets</span>
+    </button>
+    <button class="mobile-tab" data-tab="validate" type="button">
+      <span class="tab-icon">?</span><span class="tab-label">Flag</span>
+    </button>
+    <button class="mobile-tab" data-tab="creds" type="button">
+      <span class="tab-icon">^</span><span class="tab-label">Creds</span>
+    </button>
+  </nav>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
