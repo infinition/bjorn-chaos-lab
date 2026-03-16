@@ -1136,8 +1136,8 @@ select {
     padding: 0.45rem 0.6rem;
   }
 
-  .logo {
-    font-size: 1.1rem;
+  .logo-img {
+    height: 24px;
   }
 
   .topbar-title {
