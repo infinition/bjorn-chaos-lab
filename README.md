@@ -1,3 +1,6 @@
+
+<img width="200" height="208" alt="chaoslab" src="https://github.com/user-attachments/assets/4c99074c-03f0-40af-b0e2-0ecfe0c87603" />
+
 # Bjorn Chaos Lab
 
 Automated vulnerable machine deployer for penetration testing training and CTF challenges. Deploys Docker containers with multiple configurable attack surfaces over SSH, managed through a web UI with real-time feedback.
