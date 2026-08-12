@@ -1,4 +1,4 @@
-<img width="200" height="208" alt="Bjorn Chaos Lab" src="https://github.com/user-attachments/assets/4c99074c-03f0-40af-b0e2-0ecfe0c87603" />
+<img width="396" height="396" alt="image-removebg-preview (4)" src="https://github.com/user-attachments/assets/c1e1c27f-a1fe-4d95-bc9d-cf9d4439cbcd" />
 
 # Bjorn Chaos Lab
 
